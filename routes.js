@@ -95,3 +95,7 @@ routes.get('/maquinas', (req, res)=>{
 })  
 
 module.exports = routes;
+
+
+console.log("Prueba repo")
+
