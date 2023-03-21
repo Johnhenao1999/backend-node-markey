@@ -2,16 +2,62 @@ const express = require('express');
 const routes = express.Router();
 
 
+
 // Mostrar todos los atributos de los empleados
 routes.get('/holamundo', (req, res)=>{
      req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('SELECT *  FROM empleados', (err, rows)=>{
+        conn.query('SELECT *  FROM empleados_markey', (err, rows)=>{
             if(err) return res.send(err)
             res.json(rows);
         })
     }) 
-})
+});
+
+routes.get('/ingreso', (req, res)=>{
+    req.getConnection((err, conn)=>{
+       if(err) return res.send(err)
+       conn.query('SELECT *  FROM ingreso_empleados', (err, rows)=>{
+           if(err) return res.send(err)
+           res.json(rows);
+       })
+   }) 
+})  
+
+routes.get('/empleados_ingreso', (req, res) => {
+    req.getConnection((err, conn) => {
+      if (err) return res.send(err);
+      conn.query('SELECT e.idempleado, i.idingreso, e.nombre, i.hora_ingreso, i.hora_salida FROM empleados_markey e INNER JOIN ingreso_empleados i ON e.idempleado = i.idempleado ', (err, rows) => {
+        if (err) return res.send(err);
+        res.json(rows);
+      })
+    })
+  });
+
+
+  routes.get('/holamundo/empleados-ingresos/:id', (req, res) => {
+    const idEmpleado = req.params.id;
+    req.getConnection((err, conn) => {
+      if (err) return res.send(err);
+      conn.query(`SELECT e.idempleado, i.idingreso, e.nombre, i.hora_ingreso, i.hora_salida, i.total_pagar FROM empleados_markey e INNER JOIN ingreso_empleados i ON e.idempleado = i.idempleado WHERE e.idempleado = ${idEmpleado}`, (err, rows) => {
+        if (err) return res.send(err);
+        res.json(rows);
+      })
+    })
+  });
+
+  routes.post('/holamundo/ingresar_fecha/:idEmpleado', (req, res) => {
+    const { horaIngreso, horaSalida, totalPagar } = req.body;
+    const idEmpleado = req.params.idEmpleado;
+    req.getConnection((err, conn) => {
+      if (err) return res.send(err);
+      conn.query('INSERT INTO ingreso_empleados (idempleado, hora_ingreso, hora_salida, total_pagar) VALUES (?, ?, ?, ?)', [idEmpleado, horaIngreso, horaSalida, totalPagar], (err, result) => {
+        if (err) return res.send(err);
+        res.send('Registro de ingreso creado con éxito');
+      })
+    })
+  });
+
 // Mostar ciertos atributos de los empleados
 routes.get('/holamundoprueba', (req, res)=>{
     req.getConnection((err, conn)=>{
@@ -42,7 +88,21 @@ routes.get('/holamundo/:id', (req, res)=>{
 routes.post('/holamundo', (req, res)=>{
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('INSERT INTO  empleados set ?', [req.body], (err, rows)=>{
+        conn.query('INSERT INTO  empleados_markey set ?', [req.body], (err, rows)=>{
+            if(err) return res.send(err)
+            res.json('Guardado correctamente en la base de datos');
+        });
+    });
+});
+
+
+
+// Metodo para guardar el total de horas de un usuario
+ 
+routes.post('/horasEmpleados', (req, res)=>{
+    req.getConnection((err, conn)=>{
+        if(err) return res.send(err)
+        conn.query('INSERT INTO  registro_horas set ?', [req.body], (err, rows)=>{
             if(err) return res.send(err)
             res.json('Guardado correctamente en la base de datos');
         });
@@ -98,4 +158,3 @@ module.exports = routes;
 
 
 console.log("Prueba repo")
-
