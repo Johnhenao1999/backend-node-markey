@@ -2,7 +2,6 @@ const express = require('express');
 const routes = express.Router();
 
 /* ------------------ SE REALIZA ENDPOINT PARA EL INCIO DE SESION ------------------ */
-
 const users = [
     { username: 'admin', password: 'admin' },
   ];
@@ -17,7 +16,29 @@ routes.post('/login', (req, res) => {
   
     res.send({ message: 'Login successful' });
   });
-  
+
+/*------------------  GUARDAR EMPLEADO EN LA BASE DE DATOS ---------------- */
+routes.post('/holamundo', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('INSERT INTO  empleados_markey set ?', [req.body], (err, rows) => {
+            if (err) return res.send(err)
+            res.json('Guardado correctamente en la base de datos');
+        });
+    });
+});
+
+/*------------------  ELIMINAR EMPLEADO EN LA BASE DE DATOS ---------------- */
+routes.delete('/holamundo/:id', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('DELETE FROM empleados_markey WHERE idcedula = ?', [req.params.id], (err, rows) => {
+            if (err) return res.send(err)
+            res.json('Eliminado correctamente en la base de datos');
+        });
+    });
+});
+
 /* ------------------ MOSTRAR INFORMACION DE TODOS LOS EMPLEADOS ------------------ */
 routes.get('/empleados', (req, res) => {
     req.getConnection((err, conn) => {
@@ -128,6 +149,145 @@ routes.post('/holamundo/ingresar_fecha/:idcedula', (req, res) => {
         })
     })
 });
+
+/*------------------  ELIMINAR REGISTRO DE HORA EMPLEADO ---------------- */
+routes.delete('/ingreso_empleados/:id', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('DELETE FROM ingreso_empleados WHERE idingreso = ?', [req.params.id], (err, rows) => {
+            if (err) return res.send(err)
+            res.json('Registro eliminado correctamente de la base de datos');
+        });
+    });
+});
+
+/*------------------  GUARDAR CLIENTE EN LA BASE DE DATOS ---------------- */
+routes.post('/registro-clientes', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('INSERT INTO  clientes set ?', [req.body], (err, rows) => {
+            if (err) return res.send(err)
+            res.json('Guardado correctamente en la base de datos');
+        });
+    });
+});
+
+/* ------------------ MOSTRAR INFORMACION DE TODOS LOS CLIENTES ------------------ */
+routes.get('/clientes', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('SELECT *  FROM clientes', (err, rows) => {
+            if (err) return res.send(err)
+            res.json(rows);
+        })
+    })
+});
+
+/*------------------  ELIMINAR CLIENTE EN LA BASE DE DATOS ---------------- */
+routes.delete('/clientes/:id', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('DELETE FROM clientes WHERE idcliente = ?', [req.params.id], (err, rows) => {
+            if (err) return res.send(err)
+            res.json('Eliminado correctamente en la base de datos');
+        });
+    });
+});
+
+/*------------------  GUARDAR PEDIDO EN LA BASE DE DATOS ---------------- */
+routes.post('/registro-pedidos/:id_cliente', (req, res) => {
+    const { fecha, estado_pedido } = req.body;
+    const idcliente = req.params.id_cliente;
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('INSERT INTO pedidos (id_cliente, fecha, estado_pedido) VALUES (?, ?, ?)', [idcliente, fecha, estado_pedido], (err, rows) => {
+            if (err) return res.send(err)
+            res.json('Guardado correctamente en la base de datos');
+        });
+    });
+});
+
+/* ------------------ MOSTRAR PEDIDO POR CLIENTE ------------------ */
+routes.get('/pedidos/:id_cliente', (req, res) => {
+    const id_cliente = req.params.id_cliente;
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE c.id_cliente = ?', [id_cliente], (err, rows) => {
+            if (err) return res.send(err)
+            res.json(rows);
+        })
+    })
+});
+
+
+
+/*------------------  GUARDAR ITEMS EN LA BASE DE DATOS ---------------- */
+routes.post('/registro-items/:id_pedido', (req, res) => {
+    const { id_pedido } = req.params;
+    const { items } = req.body;
+    const values = items.map(item => [id_pedido, item.cantidad, item.producto, item.precio_unitario, item.total]);
+  
+    req.getConnection((err, conn) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      
+      conn.query('INSERT INTO itemsPedidos (id_pedido, cantidad, producto, precio_unitario, total) VALUES ?', [values], (err, result) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        
+        res.json('Guardado correctamente en la base de datos');
+      });
+    });
+  });
+
+  /*------------------  MOSTRAR ITEMS EN LA BASE DE DATOS ---------------- */
+  routes.get('/mostrar-items-pedidos/:id_cliente', (req, res) => {
+    const id_cliente = req.params.id_cliente;
+    req.getConnection((err, conn) => {
+      if (err) return res.send(err);
+  
+      // Consulta para obtener la información del cliente y sus pedidos
+      const sql = 'SELECT c.nombre_comercial, p.id_pedido FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE c.id_cliente = ?';
+  
+      // Consulta para obtener los items de cada pedido
+      const sqlItems = 'SELECT cantidad, producto, precio_unitario, total FROM itemsPedidos WHERE id_pedido = ?';
+  
+      conn.query(sql, [id_cliente], (err, rows) => {
+        if (err) return res.send(err);
+        
+        const result = [];
+        for (const row of rows) {
+          // Para cada pedido del cliente, obtenemos sus items
+          conn.query(sqlItems, [row.id_pedido], (err, rowsItems) => {
+            if (err) return res.send(err);
+  
+            // Creamos un objeto con la información del pedido y sus items
+            const pedido = {
+              nombre_comercial: row.nombre_comercial,
+              id_pedido: row.id_pedido,
+              items: rowsItems
+            };
+  
+            // Agregamos el objeto al array result
+            result.push(pedido);
+  
+            // Si ya se procesaron todos los pedidos, enviamos la respuesta
+            if (result.length === rows.length) {
+              res.json(result);
+            }
+          });
+        }
+      });
+    });
+  });
+
+
+
+
+
+
 
 
 //Metodo para eliminar un usuario de la base de datos
