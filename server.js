@@ -3,8 +3,7 @@ const app = express()
 const mysql = require('mysql2')
 const myconn = require('express-myconnection')
 const cors = require('cors')
-
-const routes = require('./routes');
+ 
 
 app.set('port', 8000);
 
@@ -20,8 +19,15 @@ app.use(myconn(mysql, dbOptions, 'single'))
 app.use(express.json());
 app.use(cors())
 
-app.use('/', routes);
+
+app.use(require('./routes/login/loginAdmin'));
+app.use(require('./routes/empleados/empleados'));
+app.use(require('./routes/empleados/registroHoras'));
+app.use(require('./routes/clientes/clientes'));
+app.use(require('./routes/clientes/pedidosCliente'));
+
+
 
 app.listen(app.get('port'), () => {
     console.log(`Server on port ${app.get('port')}`);
-});
+});   
