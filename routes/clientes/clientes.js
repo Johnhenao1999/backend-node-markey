@@ -24,6 +24,19 @@ routes.get('/clientes', (req, res) => {
     })
 });
 
+/* ------------------ METODO PARA CONSULTAR A CLIENTE POR ID ------------------ */
+routes.get('/clientes/:id', (req, res) => {
+    req.getConnection((err, conn) => {
+        const id = req.params.id
+        if (err) return res.send(err)
+        conn.query("SELECT * FROM clientes WHERE id_cliente=' " + id + "'", (err, rows) => {
+            if (err) return res.send(err)
+            res.json(rows);
+        })
+    })
+})
+
+
 /*------------------  ELIMINAR CLIENTE EN LA BASE DE DATOS ---------------- */
 routes.delete('/clientes/:id', (req, res) => {
     req.getConnection((err, conn) => {

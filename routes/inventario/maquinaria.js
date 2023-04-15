@@ -24,7 +24,7 @@ routes.get('/maquinas', (req, res) => {
     });
 });
 
-//Metodo para actualizar un usuario de la base de datos
+//Metodo para actualizar una maquina de la base de datos
 routes.put('/maquina/:id_maquina', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
@@ -35,7 +35,7 @@ routes.put('/maquina/:id_maquina', (req, res) => {
     });
 });
 
-//Metodo para eliminar un usuario de la base de datos
+//Metodo para eliminar una maquina de la base de datos
 routes.delete('/maquina/:id_maquina', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
