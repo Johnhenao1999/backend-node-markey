@@ -5,31 +5,20 @@ const routes = express.Router();
 
 /*------------------  GUARDAR PEDIDO EN LA BASE DE DATOS ---------------- */
 routes.post('/registro-pedidos/:id_cliente', (req, res) => {
-    const { estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante  } = req.body;
+    const { estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante } = req.body;
     const idcliente = req.params.id_cliente;
     const fechaActual = new Date().toISOString().slice(0, 10);
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
-        conn.query('INSERT INTO pedidos (id_cliente, fecha, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante) VALUES (?, ?, ?, ?, ?, ?,? ,?)', [idcliente, fechaActual, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante ], (err, rows) => {
+        conn.query('INSERT INTO pedidos (id_cliente, fecha, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante) VALUES (?,?,?,?,?,?,?,?)', [idcliente, fechaActual, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante], (err, rows) => {
             if (err) return res.send(err)
             res.json('Guardado correctamente en la base de datos');
         });
     });
 });
 
-/* ------------------ MOSTRAR TODOS LOS PEDIDOS REGISTRADOS ------------------ */
-routes.get('/pedidos', (req, res) => {
-    req.getConnection((err, conn) => {
-        if (err) return res.send(err)
-        conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE p.estado_pedido NOT LIKE "Pedido finalizado"', (err, rows) => {
-            if (err) return res.send(err)
-            res.json(rows);
-        })
-    })
-});
-
-/* ------------------ METODO PARA CONSULTAR A CLIENTE POR ID ------------------ */
-routes.get('/pedidos/:id', (req, res) => {
+/* ------------------ METODO PARA CONSULTAR UN PEDIDO POR ID ------------------ */
+ routes.get('/pedidos-cliente/:id', (req, res) => {
   req.getConnection((err, conn) => {
       const id = req.params.id
       if (err) return res.send(err)
@@ -40,8 +29,19 @@ routes.get('/pedidos/:id', (req, res) => {
   })
 })
 
+/* ------------------ MOSTRAR TODOS LOS PEDIDOS REGISTRADOS ------------------ */
+routes.get('/pedidos', (req, res) => {
+    req.getConnection((err, conn) => {
+        if (err) return res.send(err)
+        conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE p.estado_pedido NOT LIKE "Pedido finalizado"', (err, rows) => {
+            if (err) return res.send(err)
+            res.json(rows);
+        })
+    })
+});
+
 /* ------------------ METODO PARA ACTUALIZAR A UN PEDIDO POR ID ------------------ */
-routes.put('/pedidos/:id', (req, res) => {
+routes.put('/pedidos-cliente/:id', (req, res) => {
   req.getConnection((err, conn) => {
       if (err) return res.send(err)
       conn.query('UPDATE pedidos set ? WHERE id_pedido = ?', [req.body, req.params.id], (err, rows) => {
@@ -50,19 +50,6 @@ routes.put('/pedidos/:id', (req, res) => {
       });
   });
 });
-
-
-/* ------------------ METODO PARA ACTUALIZAR A CLIENTE POR ID ------------------ */
-routes.put('/clientes/:id', (req, res) => {
-  req.getConnection((err, conn) => {
-      if (err) return res.send(err)
-      conn.query('UPDATE clientes set ? WHERE id_pedido = ?', [req.body, req.params.id], (err, rows) => {
-          if (err) return res.send(err)
-          res.json('Actualizado correctamente en la base de datos');
-      });
-  });
-});
-
 
 /* ------------------ MOSTRAR TODOS LOS PEDIDOS QUE HAN SIDO FINALIZADOS ------------------ */
 routes.get('/pedidos-finalizados', (req, res) => {
@@ -76,7 +63,7 @@ routes.get('/pedidos-finalizados', (req, res) => {
 });
 
 /* ------------------ MOSTRAR PEDIDO POR CLIENTE ------------------ */
-/* routes.get('/pedidos/:id_cliente', (req, res) => {
+routes.get('/pedidos/:id_cliente', (req, res) => {
     const id_cliente = req.params.id_cliente;
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
@@ -85,18 +72,6 @@ routes.get('/pedidos-finalizados', (req, res) => {
             res.json(rows);
         })
     })
-}); */
-
-/* ------------------ MOSTRAR PEDIDO POR CLIENTE ------------------ */
-routes.get('/pedidos/:id_cliente', (req, res) => {
-  const id_cliente = req.params.id_cliente;
-  req.getConnection((err, conn) => {
-      if (err) return res.send(err)
-      conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE c.id_cliente = ?', [id_cliente], (err, rows) => {
-          if (err) return res.send(err)
-          res.json(rows);
-      })
-  })
 });
 
 /*------------------  GUARDAR ITEMS EN LA BASE DE DATOS ---------------- */
@@ -197,4 +172,26 @@ routes.post('/registro-items/:id_pedido', (req, res) => {
     });
   });
 
+  //Metodo para eliminar un pedido de la base de datos
+routes.delete('/pedidos/:id', (req, res) => {
+  req.getConnection((err, conn) => {
+      if (err) return res.send(err)
+      conn.query('DELETE FROM pedidos WHERE id_pedido = ?', [req.params.id], (err, rows) => {
+          if (err) return res.send(err)
+          res.json('Registro eliminado correctamente de la base de datos');
+      });
+  });
+});
+
+  /* ------------------ METODO PARA ACTUALIZAR A UN PEDIDO POR ID ------------------ */
+/* routes.put('/pedidos/:id', (req, res) => {
+  req.getConnection((err, conn) => {
+      if (err) return res.send(err)
+      conn.query('UPDATE pedidos set ? WHERE id_pedido = ?', [req.body, req.params.id], (err, rows) => {
+          if (err) return res.send(err)
+          res.json('Actualizado correctamente en la base de datos');
+      });
+  });
+});
+ */
   module.exports = routes;

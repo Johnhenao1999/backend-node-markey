@@ -26,6 +26,7 @@ app.use(require('./routes/empleados/registroHoras'));
 app.use(require('./routes/clientes/clientes'));
 app.use(require('./routes/clientes/pedidosCliente'));
 app.use(require('./routes/proveedores/proveedores'));
+app.use(require('./routes/inventario/maquinaria'));
 
 
 

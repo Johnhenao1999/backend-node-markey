@@ -3,7 +3,7 @@ const routes = express.Router()
 
 // Metodo para guardar una maquina en la base de datos
 
-routes.post('/ingresar-maquinaria', (req, res) => {
+routes.post('/registrar-maquinaria', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
         conn.query('INSERT INTO gestion_maquinaria set ?', [req.body], (err, rows) => {
@@ -24,8 +24,20 @@ routes.get('/maquinas', (req, res) => {
     });
 });
 
+/* ------------------ METODO PARA CONSULTAR UNA MAQUINA POR ID ------------------ */
+routes.get('/maquinas/:id', (req, res) => {
+    req.getConnection((err, conn) => {
+        const id = req.params.id
+        if (err) return res.send(err)
+        conn.query("SELECT * FROM gestion_maquinaria WHERE id_maquina=' " + id + "'", (err, rows) => {
+            if (err) return res.send(err)
+            res.json(rows);
+        })
+    })
+})
+
 //Metodo para actualizar una maquina de la base de datos
-routes.put('/maquina/:id_maquina', (req, res) => {
+routes.put('/maquinas/:id', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
         conn.query('UPDATE gestion_maquinaria set ? WHERE id_maquina = ?', [req.body, req.params.id], (err, rows) => {
@@ -36,7 +48,7 @@ routes.put('/maquina/:id_maquina', (req, res) => {
 });
 
 //Metodo para eliminar una maquina de la base de datos
-routes.delete('/maquina/:id_maquina', (req, res) => {
+routes.delete('/maquinas/:id', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
         conn.query('DELETE FROM gestion_maquinaria WHERE id_maquina = ?', [req.params.id], (err, rows) => {

@@ -1,5 +1,28 @@
 const express = require('express');
 const routes = express.Router();
+const jwt = require('jsonwebtoken');
+
+
+// Middleware que verifica si el usuario ha iniciado sesión
+function requireLogin(req, res, next) {
+    const authHeader = req.headers.authorization;
+  
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Authorization header not found' });
+    }
+  
+    const token = authHeader.split(' ')[1];
+  
+    try {
+      const decoded = jwt.verify(token, 'x^D8$X!5yG@5rYv2c#W1eA%Zf&3qB*p');
+      req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+  }
+  
+
 
 /*------------------  GUARDAR EMPLEADO EN LA BASE DE DATOS ---------------- */
 routes.post('/holamundo', (req, res) => {
@@ -12,16 +35,22 @@ routes.post('/holamundo', (req, res) => {
     });
 });
 
+
+
 /* ------------------ MOSTRAR INFORMACION DE TODOS LOS EMPLEADOS ------------------ */
-routes.get('/empleados', (req, res) => {
+routes.get('/empleados', requireLogin, (req, res) => {
     req.getConnection((err, conn) => {
-        if (err) return res.send(err)
-        conn.query('SELECT *  FROM empleados_markey', (err, rows) => {
-            if (err) return res.send(err)
-            res.json(rows);
-        })
-    })
-});
+      if (err) {
+        return res.status(500).send(err);
+      }
+      conn.query('SELECT * FROM empleados_markey', (err, rows) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        res.json(rows);
+      });
+    });
+  });
 
 /* ------------------ METODO PARA CONSULTAR A EMPLEADO POR ID ------------------ */
 routes.get('/empleados/:id', (req, res) => {
