@@ -27,6 +27,8 @@ app.use(require('./routes/clientes/clientes'));
 app.use(require('./routes/clientes/pedidosCliente'));
 app.use(require('./routes/proveedores/proveedores'));
 app.use(require('./routes/inventario/maquinaria'));
+app.use(require('./routes/inventario/insumos'));
+app.use(require('./routes/inventario/telas'));
 
 
 
