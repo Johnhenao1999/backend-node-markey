@@ -38,7 +38,7 @@ routes.post('/holamundo', (req, res) => {
 
 
 /* ------------------ MOSTRAR INFORMACION DE TODOS LOS EMPLEADOS ------------------ */
-routes.get('/empleados', requireLogin, (req, res) => {
+routes.get('/empleados', /* requireLogin, */ (req, res) => {
     req.getConnection((err, conn) => {
       if (err) {
         return res.status(500).send(err);
