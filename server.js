@@ -18,10 +18,11 @@ const dbOptions ={
  
 app.use(myconn(mysql, dbOptions, 'single'))
 app.use(express.json());
-app.use(cors())
+app.use(cors()) 
 
  
 app.use(require('./routes/login/loginAdmin'));
+app.use(require('./routes/login/logoutAdmin'));
 app.use(require('./routes/empleados/empleados'));
 app.use(require('./routes/empleados/registroHoras'));
 app.use(require('./routes/clientes/clientes'));

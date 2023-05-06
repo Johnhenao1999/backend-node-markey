@@ -5,14 +5,15 @@ const routes = express.Router();
 
 /*------------------  GUARDAR PEDIDO EN LA BASE DE DATOS ---------------- */
 routes.post('/registro-pedidos/:id_cliente', (req, res) => {
-  const { estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante } = req.body;
+  const { estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante, factura_venta } = req.body;
   const idcliente = req.params.id_cliente;
   const fechaActual = new Date().toISOString().slice(0, 10);
   req.getConnection((err, conn) => {
     if (err) return res.send(err)
-    conn.query('INSERT INTO pedidos (id_cliente, fecha, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante) VALUES (?,?,?,?,?,?,?,?)', [idcliente, fechaActual, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante], (err, rows) => {
+    conn.query('INSERT INTO pedidos (id_cliente, fecha, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante, factura_venta) VALUES (?,?,?,?,?,?,?,?, ?)', [idcliente, fechaActual, estado_pedido, descripcion_pedido, fecha_finalizacion, precio_pedido, anticipo_pedido, precio_faltante, factura_venta], (err, result) => {
       if (err) return res.send(err)
-      res.json('Guardado correctamente en la base de datos');
+      const id_pedido = result.insertId;
+      res.json({ id_pedido: id_pedido, message: 'Guardado correctamente en la base de datos' });
     });
   });
 });
@@ -33,7 +34,7 @@ routes.get('/pedidos-cliente/:id', (req, res) => {
 routes.get('/pedidos', (req, res) => {
   req.getConnection((err, conn) => {
     if (err) return res.send(err)
-    conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE p.estado_pedido NOT LIKE "Pedido finalizado"', (err, rows) => {
+    conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante, p.factura_venta FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE p.estado_pedido NOT LIKE "Pedido finalizado"', (err, rows) => {
       if (err) return res.send(err)
       res.json(rows);
     })
@@ -55,7 +56,7 @@ routes.put('/pedidos-cliente/:id', (req, res) => {
 routes.get('/pedidos-finalizados', (req, res) => {
   req.getConnection((err, conn) => {
     if (err) return res.send(err)
-    conn.query("SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE p.estado_pedido = 'Pedido finalizado'", (err, rows) => {
+    conn.query("SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante, p.factura_venta FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE p.estado_pedido = 'Pedido finalizado'", (err, rows) => {
       if (err) return res.send(err)
       res.json(rows);
     })
@@ -67,7 +68,7 @@ routes.get('/pedidos/:id_cliente', (req, res) => {
   const id_cliente = req.params.id_cliente;
   req.getConnection((err, conn) => {
     if (err) return res.send(err)
-    conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE c.id_cliente = ?', [id_cliente], (err, rows) => {
+    conn.query('SELECT c.nombre_comercial, p.id_pedido, p.fecha, p.estado_pedido, p.descripcion_pedido, p.fecha_finalizacion, p.precio_pedido, p.anticipo_pedido, p.precio_faltante, p.factura_venta FROM clientes c JOIN pedidos p ON c.id_cliente = p.id_cliente WHERE c.id_cliente = ?', [id_cliente], (err, rows) => {
       if (err) return res.send(err)
       res.json(rows);
     })

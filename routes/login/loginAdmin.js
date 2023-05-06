@@ -19,23 +19,6 @@ routes.post('/login', (req, res) => {
     res.send({ message: 'Login successful', token });
 });
 
-/* ------------------ ENDPOINT QUE REQUIERE AUTENTICACIÓN ------------------ */
-routes.get('/protected', (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).send({ error: 'No token provided' });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    jwt.verify(token, 'x^D8$X!5yG@5rYv2c#W1eA%Zf&3qB*p', (err, decoded) => { // Se verifica la validez del token
-        if (err) {
-            return res.status(403).send({ error: 'Invalid token' });
-        }
-
-        res.send({ message: 'Access granted' });
-    });
-});
 
 routes.post('/logout', (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
@@ -48,8 +31,6 @@ routes.post('/logout', (req, res) => {
     } catch (err) {
         return res.status(401).send({ error: 'Unauthorized' });
     }
-
-    // Aquí se podría agregar lógica para invalidar el token, por ejemplo, eliminando el token de una lista de tokens activos en el servidor.
 
     res.send({ message: 'Logout successful' });
 });
