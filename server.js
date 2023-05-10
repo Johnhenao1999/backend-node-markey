@@ -6,14 +6,14 @@ const myconn = require('express-myconnection')
 const cors = require('cors')
  
 
-app.set('port', 8000);
+const PORT = 8000;
 
 const dbOptions ={
-    host: process.env.MYSQLHOST || "localhost" ,
-    port: process.env.MYSQLPORT || "3306",
-    user: process.env.MYSQLUSER || "root",
-    password: process.env.MYSQLPASSWORD ||  "jhonHenao123456",
-    database: process.env.MYSQLDATABASE || "mydb"
+    host:  "localhost" ,
+    port:"3306",
+    user: "root",
+    password:  "jhonHenao123456",
+    database: "mydb"
 } 
  
 app.use(myconn(mysql, dbOptions, 'single'))
@@ -34,7 +34,9 @@ app.use(require('./routes/inventario/telas'));
 app.use(require('./routes/configuraciones/configuraciones-admin'))
 
 
- 
-app.listen(app.get('port'), () => {
+
+/* app.listen(app.get('port'), () => {
     console.log(`Server on port ${app.get('port')}`);
-});   
+});    */
+
+app.listen(process.env.PORT || PORT, ()=>console.log("Servidor corriendo"))
