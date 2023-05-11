@@ -177,7 +177,7 @@ routes.get('/detalle-pedido/:id_pedido', (req, res) => {
 routes.get('/detalle-pedido/', (req, res) => {
   req.getConnection((err, conn) => {
     if (err) return res.send(err)
-    conn.query('SELECT *  FROM itemspedidos', (err, rows) => {
+    conn.query('SELECT *  FROM itemsPedidos', (err, rows) => {
       if (err) return res.send(err)
       res.json(rows);
     })
