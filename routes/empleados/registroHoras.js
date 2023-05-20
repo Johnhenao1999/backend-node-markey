@@ -29,7 +29,7 @@ routes.get('/registro-horas-empleado/:id', (req, res) => {
     const idCedula = req.params.id;
     req.getConnection((err, conn) => {
         if (err) return res.send(err);
-        conn.query(`SELECT e.idcedula, i.idingreso, e.nombre, i.hora_ingreso, i.hora_salida, i.total_pagar, i.fecha_registro, i.hora_ingreso_manana, i.hora_salida_manana, i.total_horas FROM empleados_markey e INNER JOIN ingreso_empleados i ON e.idcedula = i.idcedula WHERE e.idcedula = ${idCedula}`, (err, rows) => {
+        conn.query(`SELECT e.idcedula, i.idingreso, e.nombre, e.apellido, i.hora_ingreso, i.hora_salida, i.total_pagar, i.fecha_registro, i.hora_ingreso_manana, i.hora_salida_manana, i.total_horas FROM empleados_markey e INNER JOIN ingreso_empleados i ON e.idcedula = i.idcedula WHERE e.idcedula = ${idCedula}`, (err, rows) => {
             if (err) return res.send(err);
             const result = rows.reduce((acc, curr) => {
                 const existingIndex = acc.findIndex((item) => item.idcedula === curr.idcedula && item.nombre === curr.nombre);
@@ -48,6 +48,7 @@ routes.get('/registro-horas-empleado/:id', (req, res) => {
                     acc.push({
                         idcedula: curr.idcedula,
                         nombre: curr.nombre,
+                        apellido: curr.apellido,
                         registros: [{
                             idingreso: curr.idingreso,
                             hora_ingreso_manana: curr.hora_ingreso_manana,
@@ -66,6 +67,28 @@ routes.get('/registro-horas-empleado/:id', (req, res) => {
         })
     })
 });
+
+
+/* ------------------ SE TRAE CONSULTA DE CONFIGURACION PARA USAR EL VALOR HORA------------------ */
+let valorHora;
+
+routes.get('/configuracion', (req, res) => {
+    req.getConnection((err, conn) => {
+      if (err) return res.send(err);
+  
+      conn.query('SELECT * FROM configuraciones', (err, rows) => {
+        if (err) return res.send(err);
+  
+        valorHora = rows[0].valor_hora;
+        
+        // Puedes acceder a todas las filas y campos de la tabla configuraciones en 'rows'
+  
+        res.json(rows);
+      });
+    });
+  });
+
+
 
 /* ------------------ INSERTAR REGISTROS A LA TABLA DE HORAS POR EMPLEADO ------------------ */
 routes.post('/holamundo/ingresar_fecha/:idcedula', (req, res) => {
@@ -89,7 +112,7 @@ routes.post('/holamundo/ingresar_fecha/:idcedula', (req, res) => {
     const totalHorasTrabajadas = horasTrabajadasManana + horasTrabajadasTarde;
 
     // Calcular total a pagar
-    const totalPagar = totalHorasTrabajadas * 1000;
+    const totalPagar = totalHorasTrabajadas * valorHora;
 
     const fechaActual = new Date().toISOString().slice(0, 10);
 

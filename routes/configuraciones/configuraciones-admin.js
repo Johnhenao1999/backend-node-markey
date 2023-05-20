@@ -1,8 +1,10 @@
 const express = require('express');
 const routes = express.Router();
 
+let valorHora;
+
 /*------------------  GUARDAR CLIENTE EN LA BASE DE DATOS ---------------- */
-routes.post('/configuracion', (req, res) => {
+ routes.post('/configuracion', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
         conn.query('INSERT INTO  configuraciones set ?', [req.body], (err, rows) => {
@@ -12,8 +14,10 @@ routes.post('/configuracion', (req, res) => {
     });
 });
 
+
+
 /* ------------------ MOSTRAR INFORMACION DE TODOS LOS CLIENTES ------------------ */
-routes.get('/configuracion', (req, res) => {
+/* routes.get('/configuracion', (req, res) => {
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
         conn.query('SELECT *  FROM configuraciones', (err, rows) => {
@@ -21,7 +25,26 @@ routes.get('/configuracion', (req, res) => {
             res.json(rows);
         })
     })
-});
+}); */
+
+routes.get('/configuracion', (req, res) => {
+    req.getConnection((err, conn) => {
+      if (err) return res.send(err);
+  
+      conn.query('SELECT * FROM configuraciones', (err, rows) => {
+        if (err) return res.send(err);
+  
+        valorHora = rows[0].valor_hora;
+        
+        // Puedes acceder a todas las filas y campos de la tabla configuraciones en 'rows'
+  
+        res.json(rows);
+      });
+    });
+  });
+
+
+
 
 /* ------------------ METODO PARA CONSULTAR A CLIENTE POR ID ------------------ */
 routes.put('/configuracion/:id', (req, res) => {
